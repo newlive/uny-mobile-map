@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <Title>FT UNY Digital Map</Title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="assets/css/jquery.mobile-1.3.0.min.css"/>
+        <link rel="stylesheet" href="assets/css/redblue.css"/>
+        <link rel="stylesheet" href="assets/css/redblue.min.css"/>
+        <script src="assets/js/cordova-2.5.0.js"></script>
+        <script src="assets/js/jquery-1.9.1.min.js"></script>
+        <script src="assets/js/jquery.mobile-1.3.0.min.js"></script>
+        <script src="menu.js"></script>
+        <script src="config.js"></script>
+    </head>
+    <body>
+        <div data-role="page" data-theme="b">
+            <div data-role="header" data-theme="d" data-position="fixed">
+                <h1>Home</h1>
+                
+                
+            </div>
+            <div data-role="content">
+                <center><img src="assets/img/atlasm.png" style="widht:auto; max-width: 75%;"/></center>
+                <div id="12"></div>
+                <br>
+                <br>
+            <div data-role="controlgroup" style="width:75%;margin: 0 auto">
+                <button data-theme="c" data-transition="slide" onclick="maps();">UNY Map</button>
+                <button data-theme="c" data-transition="slide" onclick="cari();">Place</button>
+		        <button data-theme="c" data-transition="slide" onclick="about();">About</button>
+            </div>		
+            </div>
+            <div data-role="footer" data-theme="d" data-position="fixed">
+                <h4>UNY Digital Map</h4>
+            </div>
+                        
+        </div>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                getMenu();
+            });
+            function maps() {
+                $(location).attr('href','peta.html');
+            }
+            function about() {
+                $(location).attr('href','about.html');
+            }
+            function cari() {
+                $(location).attr('href','search.html');
+            }
+        </script>
+    </body>
+</html>

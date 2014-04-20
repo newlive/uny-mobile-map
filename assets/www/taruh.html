@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <Title>Detail Gedung</Title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="assets/css/jquery.mobile-1.3.0.min.css"/>
+        <link rel="stylesheet" href="assets/css/mystyle.css"/>
+        <script src="assets/js/cordova-2.5.0.js"></script>
+        <script src="assets/js/jquery-1.9.1.min.js"></script>
+        <script src="assets/js/jquery.mobile-1.3.0.min.js"></script>
+        <script src="menu.js"></script>
+        <script src="config.js"></script>
+    </head>
+    <body>
+        <div data-role="page" class="ui-responsive-panel" data-theme="c">
+            <div data-role="header" data-theme="a" data-position="fixed">
+                <h1>Detail</h1>
+                <a href="#menu-panel" data-icon="bars" data-iconpos="notext">Menu</a>
+                <a href="#map-panel" id="map-btn"></a>
+            </div>
+            <div data-role="content">
+                
+                <div id="namagedung">
+                    
+                </div>
+                
+                <div data-role="collapsible" id="colgedung"  data-collapsed-icon="arrow-d" data-expanded-icon="arrow-u" data-iconpos="right" data-collapsed="true" data-theme="b" data-content-theme="d">
+                    <h3 id="nama_gdglantai">Foto Gedung</h3>
+                    <p id="gbr_gdg"></p>
+                </div>
+                
+                <label for="desk" id="ketgedung">
+                    
+                </label>
+                <select name="select-native-1" id="lantai" data-theme="a">
+                   <option value="0">==Lantai==</option>
+                </select>
+                
+                <div data-role="collapsible" id="collantai" data-collapsed-icon="arrow-d" data-expanded-icon="arrow-u" data-iconpos="right" data-collapsed="true" data-theme="b" data-content-theme="d">
+                    <h3 id="nama_gdglantai">Foto Lantai</h3>
+                    <p id="gbr_lt"></p>
+                </div>
+                <br/>
+                <ul id="listruang" data-theme="a" data-role="listview" data-filter-placeholder="Cari Ruang..." data-filter="true" data-inset="true">
+                </ul>
+                
+            </div>
+            <div data-role="footer" data-theme="a" data-position="fixed">
+                <h4>UNY Dgital Map</h4>
+            </div>
+            <div data-role="panel" data-position-fixed="true" data-theme="a" id="menu-panel">
+                <ul id="menu" data-role="listview" data-theme="a"></ul>
+            </div>
+            
+        </div>
+        
+        <script type="text/javascript">
+            $(document).bind('mobileinit', function() {
+                
+            });
+            $(document).ready(function () {
+                
+                var id_gdg = window.localStorage.getItem("iddatagedung");
+                 getMenu();
+                 peta(id_gdg);
+//                getlantai();
+//                datacoll();
+                lantaisel(id_gdg);
+                
+//                alert(id_gdg);   CEK ERROR
+            });
+            
+            function lantaisel(id_gdg) {
+                
+               //alert(id_gdg);   CEK ERROR
+               
+
+              var id = id_gdg;
+                
+                $('#listruang:visible').empty();
+                $('#gbr_gdg').empty();
+                
+//                alert(id_gdg); CEK ERROR
+                
+                $.ajax( {
+                    //url:base_url+"ruang.php?op=fakultas&id='"+id+"'",
+                    url:base_url+"ruang.php?op=selectlantai&id="+id,
+                    dataType:"jsonp",
+                    crossDomain:true,
+                    jsonp : "callback",
+                    timeout:10000,
+                    
+                    beforeSend: function() {
+                        $('#loading').attr('style','');
+                    }, complete: function() {
+                        $('#loading').attr('style','display:none');
+                    }, success: function(data) {
+                        if(data['status']!='error') {
+                            //alert(data);
+                            $.each(data, function(k,v) {
+                                $('#lantai').append('<option value='+v.id_lantai+'>'+v.nama_lantai+'</option>');
+                                $('#namagedung').append('<center><h4>'+v.nama_gdglantai+'</h4></center>');
+                                //$('#map-btn').append("<a href='#' onclick=lokasiRuang('"+v.koordinat_gdg+"')>"+v.nama_gdg+"</a>");
+                                                                
+                                $('<img src="'+v.gambar+'"style="widht:auto; max-width: 100%;">').load(function() {
+                                $(this).appendTo('#gbr_gdg');
+                                       })   
+                            });
+                            $('#listruang:visible').listview('refresh');
+                        } else {
+                            $('#listruang').append('<li>Tidak ada ruang</li>');;
+                        }
+                    }, error: function() {
+                        alert("Koneksi Error bro");
+                    }
+                  });
+             } 
+            
+            function peta(id_gdg) {
+                
+               //alert(id_gdg);   CEK ERROR
+               
+
+              var id = id_gdg;
+                
+                
+                $.ajax( {
+                    //url:base_url+"ruang.php?op=fakultas&id='"+id+"'",
+                    url:base_url+"ruang.php?op=petagedung&id="+id,
+                    dataType:"jsonp",
+                    crossDomain:true,
+                    jsonp : "callback",
+                    timeout:10000,
+                    
+                    beforeSend: function() {
+                        $('#loading').attr('style','');
+                    }, complete: function() {
+                        $('#loading').attr('style','display:none');
+                    }, success: function(data) {
+                        if(data['status']!='error') {
+                            //alert(data);
+                            $.each(data, function(k,v) {
+                                
+                                $('#map-btn').append("<a href='#' onclick=lokasiRuang('"+v.koordinat_gdg+"')>Peta</a>");
+                                                                
+                                   
+                            });
+                            
+                        } else {
+                            
+                        }
+                    }, error: function() {
+                        alert("Koneksi Error bro");
+                    }
+                  });
+             } 
+            
+            $('#lantai').change(
+              function()
+               {
+               var id = $("#lantai").val();
+               $('#listruang:visible').empty();  //untuk menghapus data kemudian ambil data selanjutnya
+               $('#listlokasi:visible').empty();
+               $('#gbr_lt').empty();
+               
+               $.ajax( {
+                    url:base_url+"ruang.php?op=lantai&id="+id,
+                    dataType:"jsonp",
+                    crossDomain:true,
+                    jsonp : "callback",
+                    timeout:10000,
+                    beforeSend: function() {
+                        $('#loading').attr('style','');
+                    }, complete: function() {
+                        $('#loading').attr('style','display:none');
+                    }, success: function(data) {
+                        if(data['status']!='error') {
+                            $.each(data, function(k,v) {
+                               $('#listruang').append("<li>"+v.nama_ruang+"</a></li>");
+                               
+                                $('<img src="'+v.gbr_lantai+'"style="widht:auto; max-width: 100%;">').load(function() {
+                                $(this).appendTo('#gbr_lt');
+                                    })  
+                            
+                               
+                            });
+                            $('#listruang:visible').listview('refresh');
+                            
+                        } else {
+                            $('#listruang').append('<li>Tidak ada ruang</li>');;
+                        }
+                    }, error: function() {
+                        alert("Koneksi Error bro");
+                    }
+                            
+                });
+              
+            });
+
+//               function peta() {
+//               
+//                var id = id_gdg;
+//                var id_gdg = window.localStorage.getItem("iddatagedung");
+//                
+//                //alert(id_gdg);
+//                $.ajax( {
+//                    //url:base_url+"ruang.php?op=all_ruang",
+//                    url:base_url+"ruang.php?op=lokasi&id="+id,
+//                    dataType:"jsonp",
+//                    crossDomain:true,
+//                    jsonp : "callback",
+//                    timeout:10000,
+//                    beforeSend: function() {
+//                        $('#loading').attr('style','');
+//                    }, complete: function() {
+//                        $('#loading').attr('style','display:none');
+//                    }, success: function(data) {
+//                        if(data['status']!='error') {
+//                            $.each(data, function(k,v) {
+//                               $('#map-btn').append("<a href='#' onclick=lokasiRuang('"+v.koordinat_gdg+"')>"+v.nama_gdg+"</a>");
+//                            });
+//                            
+//                        } else {
+//
+//                        }
+//                    }, error: function() {
+//                        alert("Koneksi Error");
+//                    }    
+//                });
+//            }
+            
+            
+//
+//            $('#map-panel').attr("<a href='#' onclick=lokasiRuang('"+v.koordinat_gdg+"')></a>");
+//            
+            function lokasiRuang(lokasikoor) {
+                alert(lokasikoor);
+                window.localStorage.setItem("lokasikoor", lokasikoor);
+                $(location).attr('href', 'peta.html');
+            }
+            
+           
+            
+        </script>
+    </body>
+</html>

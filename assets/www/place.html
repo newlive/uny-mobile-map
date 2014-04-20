@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <Title>UNY Digital Map</Title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="assets/css/jquery.mobile-1.3.0.min.css"/>
+         <link rel="stylesheet" href="assets/css/redblue.css"/>
+        <link rel="stylesheet" href="assets/css/redblue.min.css"/>
+        <script src="assets/js/cordova-2.5.0.js"></script>
+        <script src="assets/js/jquery-1.9.1.min.js"></script>
+        <script src="assets/js/jquery.mobile-1.3.0.min.js"></script>
+        <script src="menu.js"></script>
+        <script src="config.js"></script>
+    </head>
+    <body>
+        <div data-role="page" class="ui-responsive-panel" data-theme="b">
+            <div data-role="header" data-theme="d" data-position="fixed">
+                <h1>Place</h1>
+                <a href="#menu-panel" data-theme="b" data-icon="bars" data-iconpos="notext">Menu</a>
+                
+                <div data-role="navbar">
+                <ul>
+                    <li><button data-corners="false" onclick="search();">Search</button></li>
+                    <li><button data-theme="b" data-corners="false">Browse</button></li>
+                    
+                </ul>
+            </div><!-- /navbar -->
+
+            </div>
+            <div data-role="content">
+                
+            <div data-role="controlgroup">
+                <select data-theme="c" name="select-native-1" id="kategori">
+                    <option value="0">==Kategori==</option>
+                </select>
+                <select data-theme="c" name="select-native-1" id="lokasi">
+                    <option value="0">==Lokasi==</option>
+                </select>
+            </div>
+                <br/>
+                <ul id="listlokasi" data-theme="c" data-role="listview" data-filter-reveal="true" data-filter-placeholder="Cari Lokasi"  data-filter="true" data-inset="true">
+                </ul>
+                <br/>
+                
+                
+
+                <div id="loading" style="display:none"><center><img src="assets/img/ajax-loader.gif" height="42" width="42"/></center></div>
+                
+            </div>
+            <div data-role="footer" data-theme="d" data-position="fixed">
+                <h4>UNY Dgital Map</h4>
+            </div>
+            <div data-role="panel" data-position-fixed="true" data-theme="c" id="menu-panel">
+                <ul id="menu" data-role="listview" data-theme="c"></ul>
+            </div>
+           
+        </div>
+        
+        <script type="text/javascript">
+            $(document).bind('mobileinit', function() {
+                // extend
+            });
+            $(document).ready(function () {
+                getMenu();
+                getKategori();
+                
+                
+                
+            });
+            
+            function getKategori() {
+                
+                
+                
+                $.ajax( {
+                    url:base_url+"ruang.php?op=nama_kat",
+                    dataType:"jsonp",
+                    crossDomain:true,
+                    jsonp : "callback",
+                    timeout:10000,
+                    beforeSend: function() {
+                        $('#loading').attr('style','');
+                    }, complete: function() {
+                        $('#loading').attr('style','display:none');
+                    }, success: function(data) {
+                        $.each(data, function(k,v) {
+                            $('#kategori').append('<option value='+v.id_kat+'>'+v.nama_kat+'</option>');
+                            //$('#lokasi').select().hide();
+                            //$('#lokasi').select().empty();
+                            //$('#lantai').select().hide();
+                            //$('#lantai').select().empty();
+                         });
+                    }, error: function() {
+                        alert("Koneksi Error bro");
+                    }
+                            
+                });
+            }
+            
+            $('#kategori').change(
+              function()
+               {
+               //alert($("#fakultas").val());
+                
+               var id = $("#kategori").val();
+               
+               $('#lokasi:visible').empty();
+               $('#listlokasi:visible').empty();  //untuk menghapus data kemudian ambil data selanjutnya
+               $('#listruang:visible').empty();
+               $('#lantai:visible').empty();
+               $('#lokasi').selectmenu('refresh');
+               $('#lantai').selectmenu('refresh');
+               
+               
+               
+               $.ajax( {
+                    //url:base_url+"ruang.php?op=fakultas&id='"+id+"'",
+                    url:base_url+"ruang.php?op=kategori&id="+id,
+                    dataType:"jsonp",
+                    crossDomain:true,
+                    jsonp : "callback",
+                    timeout:10000,
+                    beforeSend: function() {
+                        $('#loading').attr('style','');
+                    }, complete: function() {
+                        $('#loading').attr('style','display:none');
+                    }, success: function(data) {
+                        if(data['status']!='error') {
+                            $.each(data, function(k,v) {
+                               $('#lokasi').append('<option value='+v.id_lokasi+'>'+v.nama_lokasi+'</option>');
+                               
+                            });
+                            $('#listlokasi:visible').listview('refresh');
+                        } else {
+                            $('#listlokasi').append('<li>Tidak ada lokasi</li>');;
+                        }
+                    }, error: function() {
+                        alert("Koneksi Error bro");
+                    }
+                            
+                });
+              
+            });
+            
+             $('#lokasi').change(
+              function()
+               {
+                //alert($("#fakultas").val());
+                
+               var id = $("#lokasi").val();
+               $('#listlokasi:visible').empty();  //untuk menghapus data kemudian ambil data selanjutnya
+               $('#listruang:visible').empty();
+               $('#lantai:visible').empty();
+               $('#lantai').selectmenu('refresh');
+               
+                $.ajax( {
+                    //url:base_url+"ruang.php?op=fakultas&id='"+id+"'",
+                    url:base_url+"ruang.php?op=lokasi&id="+id,
+                    dataType:"jsonp",
+                    crossDomain:true,
+                    jsonp : "callback",
+                    timeout:10000,
+                    beforeSend: function() {
+                        $('#loading').attr('style','');
+                    }, complete: function() {
+                        $('#loading').attr('style','display:none');
+                    }, success: function(data) {
+                        if(data['status']!='error') {
+                            $.each(data, function(k,v) {
+                               $('#listlokasi').append("<li><a href='#' onclick=detailgedung('"+v.id_gdg+"')>"+v.nama_gdg+"</a></li>");
+                               
+                            });
+                            $('#listlokasi:visible').listview('refresh');
+                            
+                        } else {
+                            $('#listlokasi').append('<li>Tidak ada lokasi</li>');;
+                        }
+                    }, error: function() {
+                        alert("Koneksi Error bro");
+                    }
+                            
+                });
+              
+            });
+            
+            function detailgedung(id_gdg) {
+                window.localStorage.setItem("iddatagedung",id_gdg);
+                $(location).attr("href","detail.html");
+            
+            }
+            function search() {
+                $(location).attr('href','search.html');
+            }
+           
+            
+            
+        </script>
+    </body>
+</html>

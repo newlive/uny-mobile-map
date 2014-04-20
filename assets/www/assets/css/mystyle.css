@@ -1,0 +1,19 @@
+/* 
+    Document   : mystyle
+    Created on : 17 Mar 14, 20:23:05
+    Author     : Rizki Newlive
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+.ui-collapsible h3 .ui-btn-inner
+{
+    text-align:center;
+}
+
+
+

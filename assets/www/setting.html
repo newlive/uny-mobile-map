@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <Title>UNY Digital Map</Title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="assets/css/jquery.mobile-1.3.0.min.css"/>
+        <script src="assets/js/cordova-2.5.0.js"></script>
+        <script type="text/javascript" src="assets/js/backgroundService-2.5.0.js"></script>
+        <script type="text/javascript" src="assets/js/myService-2.5.0.js"></script>
+        <script src="assets/js/jquery-1.9.1.min.js"></script>
+        <script src="assets/js/jquery.mobile-1.3.0.min.js"></script>
+        <script src="menu.js"></script>
+        <script src="config.js"></script>
+    </head>
+    <body>
+        <div data-role="page" class="ui-responsive-panel" data-theme="c">
+            <div data-role="header" data-theme="b" data-position="fixed">
+                <h1>SETTING</h1>
+                <a href="#menu-panel" data-icon="bars" data-iconpos="notext">Menu</a>
+                <a href="#info-panel" data-icon="info" data-iconpos="notext">Info</a>
+            </div>
+            <div data-role="content">
+                <center><h3>Setting Server</h3></center>
+                <hr/>
+                Server yang digunakan = <b><span id="server"></span></b>
+                <input id="serverinput" />
+                <button data-theme="b" onclick="changeserver();">Ubah Server</button>
+                <br/>
+                Setting default untuk mengubah setting server ke default
+                <button data-theme="b" onclick="clearcache();">Setting Default</button>
+                <br/>
+                <hr/>
+                <center><h3>Setting Service</h3></center>
+                <hr/>
+                <table>
+                    <tr>
+                        <th>Service</th>
+                        <td><div id="serviceStatus"></div></td>
+                        <td><input data-theme="b" id="toggleService" type="button" value="toggle"/></td>
+                    </tr>
+                    <tr>
+                        <th>Timer</th>
+                        <td><div id="timerStatus"></div></td>
+                        <td><input data-theme="b" id="toggleTimer" type="button" value="toggle"/></td>
+                    </tr>
+                    <tr>
+                        <th>Boot</th>
+                        <td><div id="bootStatus"></div></td>
+                        <td><input data-theme="b" id="toggleBoot" type="button" value="toggle"/></td>
+                    </tr>
+
+                </table>
+
+            </div>
+            <div data-role="footer" data-theme="b" data-position="fixed">
+                <h4>ATLAS</h4>
+            </div>
+            <div data-role="panel" data-position-fixed="true" data-theme="a" id="menu-panel">
+                <ul id="menu" data-role="listview" data-theme="a"></ul>
+            </div>
+            <div data-role="panel" data-position="right" data-theme="a" id="info-panel">
+                <ul id="myfriends" data-role="listview" data-theme="a" data-filter="true" data-filter-placeholder="cari teman..."></ul>
+            </div>
+        </div>
+        <script type="text/javascript">
+                    $(document).ready(function() {
+                        getMenu();
+                        //getStatus();
+                        $('#server').html(window.localStorage.getItem('server'));
+                    });
+                    function changeserver() {
+                        window.localStorage.setItem('server', $('#serverinput').val());
+                        $('#server').html(window.localStorage.getItem('server'));
+                    }
+                    function clearcache() {
+                        window.localStorage.clear();
+                        $(location).attr('href', 'index.html');
+                    }
+                    var myService = cordova.require('cordova/plugin/myService');
+
+                    document.addEventListener('deviceready', function() {
+                        getStatus();
+                    }, true);
+
+                    function handleSuccess(data) {
+                        updateView(data);
+                    }
+
+                    function handleError(data) {
+                        alert("Error: " + data.ErrorMessage);
+                        alert(JSON.stringify(data));
+                        updateView(data);
+                    }
+
+                    /*
+                     * Button Handlers
+                     */
+                    function getStatus() {
+                        myService.getStatus(function(r) {
+                            handleSuccess(r);
+                        },
+                                function(e) {
+                                    handleError(e);
+                                });
+                    }
+                    ;
+
+                    function startService() {
+                        var jsonString = window.localStorage.getItem("iduser");
+                        window.MyHandler.processData(jsonString);
+                        myService.startService(function(r) {
+                            handleSuccess(r)
+                        },
+                                function(e) {
+                                    handleError(e)
+                                });
+                    }
+
+                    function stopService() {
+                        myService.stopService(function(r) {
+                            handleSuccess(r)
+                        },
+                                function(e) {
+                                    handleError(e)
+                                });
+                    }
+
+                    function enableTimer() {
+                        myService.enableTimer(60000,
+                                function(r) {
+                                    handleSuccess(r)
+                                },
+                                function(e) {
+                                    handleError(e)
+                                });
+                    }
+
+                    function disableTimer() {
+                        myService.disableTimer(function(r) {
+                            handleSuccess(r)
+                        },
+                                function(e) {
+                                    handleError(e)
+                                });
+                    }
+                    ;
+
+                    function registerForBootStart() {
+                        myService.registerForBootStart(function(r) {
+                            handleSuccess(r)
+                        },
+                                function(e) {
+                                    handleError(e)
+                                });
+                    }
+
+                    function deregisterForBootStart() {
+                        myService.deregisterForBootStart(function(r) {
+                            handleSuccess(r)
+                        },
+                                function(e) {
+                                    handleError(e)
+                                });
+                    }
+
+                    function setConfig() {
+                        var helloToTxt = document.getElementById("helloToTxt");
+                        var helloToString = helloToTxt.value;
+                        var config = {
+                            "HelloTo": helloToString
+                        };
+                        myService.setConfiguration(config,
+                                function(r) {
+                                    handleSuccess(r)
+                                },
+                                function(e) {
+                                    handleError(e)
+                                });
+                    }
+
+                    /*
+                     * View logic
+                     */
+                    function updateView(data) {
+                        var serviceBtn = document.getElementById("toggleService");
+                        var timerBtn = document.getElementById("toggleTimer");
+                        var bootBtn = document.getElementById("toggleBoot");
+
+                        var serviceStatus = document.getElementById("serviceStatus");
+                        var timerStatus = document.getElementById("timerStatus");
+                        var bootStatus = document.getElementById("bootStatus");
+
+                        serviceBtn.disabled = false;
+                        if (data.ServiceRunning) {
+                            serviceStatus.innerHTML = "Running";
+                            serviceBtn.onclick = stopService;
+                            timerBtn.disabled = false;
+                            if (data.TimerEnabled) {
+                                timerStatus.innerHTML = "Enabled";
+                                timerBtn.onclick = disableTimer;
+                            } else {
+                                timerStatus.innerHTML = "Disabled";
+                                timerBtn.onclick = enableTimer;
+                            }
+
+                        } else {
+                            serviceStatus.innerHTML = "Not running";
+                            serviceBtn.onclick = startService;
+                            timerBtn.disabled = true;
+                            timerEnabled = false;
+                        }
+
+                        bootBtn.disabled = false;
+                        if (data.RegisteredForBootStart) {
+                            bootStatus.innerHTML = "Registered";
+                            bootBtn.onclick = deregisterForBootStart;
+                        } else {
+                            bootStatus.innerHTML = "Not registered";
+                            bootBtn.onclick = registerForBootStart;
+                        }
+
+                        if (data.Configuration != null)
+                        {
+                            try {
+                                var helloToTxt = document.getElementById("helloToTxt");
+                                helloToTxt.value = data.Configuration.HelloTo;
+                            } catch (err) {
+                            }
+                        }
+
+                        if (data.LatestResult != null)
+                        {
+                            try {
+                                var resultMessage = document.getElementById("resultMessage");
+                                resultMessage.innerHTML = data.LatestResult.Message;
+                            } catch (err) {
+                            }
+                        }
+                    }
+        </script>
+    </body>
+</html>
